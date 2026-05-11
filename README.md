@@ -38,10 +38,46 @@
 | GET    | `/api/admin/all-bookings` | Все записи | - | Array of all bookings |
 
 ## Инструкция по запуску
-1. Настроить MySQL базу данных. (`docker compose up -d`)
-2. `cd backend && npm install && npm run dev`
-3. `cd frontend && npm install && npm run dev`
+1. **База данных:** Создайте базу данных `booking_system` в MySQL. (`docker compose up -d`)
+2. **Бэкенд:**
+   ```bash
+   cd backend
+   npm install
+   npm run init-db  # Создание таблиц
+   npm run dev      # Запуск сервера
+   ```
+3. **Фронтенд:**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev      # Запуск сайта
+   ```
+
+## Список API эндпоинтов
+| Метод  | Путь | Описание | Auth |
+|--------|------|----------|------|
+| GET    | `/api/services` | Список услуг | Нет |
+| POST   | `/api/register` | Регистрация | Нет |
+| POST   | `/api/login`    | Вход | Нет |
+| POST   | `/api/admin/services` | Добавить услугу | Admin |
+| DELETE | `/api/admin/services/:id` | Удалить услугу | Admin |
+| POST   | `/api/bookings` | Создать запись | User |
+| GET    | `/api/my-bookings` | Мои записи | User |
+| DELETE | `/api/bookings/:id` | Отменить запись | User |
+| GET    | `/api/admin/all-bookings` | Все записи | Admin |
 
 ## Скриншоты
 Главная страница:
 ![Скриншот главной страницы](./.github/main_page.png)
+
+Регистрация:
+![Скриншот регистрации](./.github/reg_page.png)
+
+Авторизация:
+![Скриншот авторизации](./.github/login_page.png)
+
+Как админ видит сайт:
+![Скриншот как админ видит сайт](./.github/admin/admin_view.png)
+
+Админ панель:
+![Скриншот админ панели](./.github/admin/admin_panel.png)

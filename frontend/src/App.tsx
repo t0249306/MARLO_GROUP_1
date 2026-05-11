@@ -1,81 +1,73 @@
-import { useEffect, useState } from 'react'
-import './App.css'
-import axios from 'axios'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import './App.css';
+import Home from './pages/Home.js';
+import Login from './pages/Login.js';
+import Register from './pages/Register.js';
+import AdminServices from './pages/AdminServices.js';
 
-interface Service {
+interface User {
   id: number;
-  name: string;
-  description: string;
-  price: number;
+  username: string;
+  role: 'user' | 'admin';
 }
 
 function App() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/services');
-        setServices(response.data);
-      } catch (err) {
-        console.error('Ошибка при загрузке услуг:', err);
-        setError('Не удалось загрузить список услуг. Убедитесь, что бэкенд запущен.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchServices();
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    window.location.href = '/';
+  };
+
   return (
-    <div className="app">
-      <header className="header">
-        <h1>Система онлайн-записи</h1>
-        <nav>
-          <ul>
-            <li><a href="/">Главная</a></li>
-            <li><a href="/bookings">Мои записи</a></li>
-            <li><a href="/login">Вход</a></li>
-          </ul>
-        </nav>
-      </header>
+    <Router>
+      <div className="app">
+        <header className="header">
+          <Link to="/" className="logo"><h1>Система онлайн-записи</h1></Link>
+          <nav>
+            <ul>
+              <li><Link to="/">Главная</Link></li>
+              {user ? (
+                <>
+                  {user.role === 'admin' && <li><Link to="/admin/services">Услуги (Админ)</Link></li>}
+                  <li><Link to="/bookings">Мои записи</Link></li>
+                  <li><span className="user-name">Привет, {user.username}!</span></li>
+                  <li><button className="logout-btn" onClick={handleLogout}>Выход</button></li>
+                </>
+              ) : (
+                <>
+                  <li><Link to="/login">Вход</Link></li>
+                  <li><Link to="/register">Регистрация</Link></li>
+                </>
+              )}
+            </ul>
+          </nav>
+        </header>
 
-      <main className="container">
-        <section className="hero">
-          <h2>Запишитесь на услугу онлайн</h2>
-          <p>Быстро, удобно, надежно.</p>
-        </section>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/admin/services" element={<AdminServices />} />
+          <Route path="/bookings" element={<div className="container"><h2>Мои записи (Будет на 3 неделе)</h2></div>} />
+        </Routes>
 
-        <section className="services">
-          <h3>Наши услуги</h3>
-          {loading && <p>Загрузка...</p>}
-          {error && <p className="error">{error}</p>}
-          
-          <div className="services-grid">
-            {services.length > 0 ? (
-              services.map(service => (
-                <div key={service.id} className="service-card">
-                  <h4>{service.name}</h4>
-                  <p>{service.description}</p>
-                  <p className="price">{service.price} ₽</p>
-                  <button>Записаться</button>
-                </div>
-              ))
-            ) : (
-              !loading && !error && <p>Услуг пока нет.</p>
-            )}
-          </div>
-        </section>
-      </main>
-
-      <footer className="footer">
-        <p>&copy; 2026 Система онлайн-записи</p>
-      </footer>
-    </div>
-  )
+        <footer className="footer">
+          <p>&copy; 2026 Система онлайн-записи</p>
+        </footer>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;
