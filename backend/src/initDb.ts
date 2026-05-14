@@ -39,6 +39,7 @@ const initDb = async () => {
     `);
 
     console.log('База данных успешно инициализирована');
+
     process.exit(0);
   } catch (error) {
     console.error('Ошибка инициализации базы данных:', error);

@@ -111,6 +111,88 @@ app.delete('/api/admin/services/:id', authenticateToken, isAdmin, async (req: Au
   }
 });
 
+// POST /api/bookings - Создание записи
+app.post('/api/bookings', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const { service_id, booking_date } = req.body;
+    const user_id = req.user!.id;
+
+    // Проверка даты (нельзя на прошедшую)
+    if (new Date(booking_date) < new Date()) {
+      return res.status(400).json({ message: 'Нельзя записаться на прошедшую дату' });
+    }
+
+    const [result] = await pool.query(
+      'INSERT INTO bookings (user_id, service_id, booking_date, status) VALUES (?, ?, ?, ?)',
+      [user_id, service_id, booking_date, 'confirmed']
+    ) as any[];
+
+    res.status(201).json({ id: result.insertId, user_id, service_id, booking_date, status: 'confirmed' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Ошибка при создании записи' });
+  }
+});
+
+// GET /api/my-bookings - Просмотр своих записей
+app.get('/api/my-bookings', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const user_id = req.user!.id;
+    const [rows] = await pool.query(`
+      SELECT b.*, s.name as service_name, s.price 
+      FROM bookings b
+      JOIN services s ON b.service_id = s.id
+      WHERE b.user_id = ?
+      ORDER BY b.booking_date DESC
+    `, [user_id]);
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Ошибка при получении записей' });
+  }
+});
+
+// DELETE /api/bookings/:id - Отмена записи
+app.delete('/api/bookings/:id', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+    const user_id = req.user!.id;
+
+    // Проверяем, что запись принадлежит пользователю (если не админ)
+    const [rows] = await pool.query('SELECT * FROM bookings WHERE id = ?', [id]) as any[];
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Запись не найдена' });
+    }
+
+    if (rows[0].user_id !== user_id && req.user!.role !== 'admin') {
+      return res.status(403).json({ message: 'Вы не можете отменить чужую запись' });
+    }
+
+    await pool.query('DELETE FROM bookings WHERE id = ?', [id]);
+    res.json({ message: 'Запись отменена' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Ошибка при отмене записи' });
+  }
+});
+
+// GET /api/admin/all-bookings - Все записи (Админ)
+app.get('/api/admin/all-bookings', authenticateToken, isAdmin, async (req: AuthRequest, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT b.*, s.name as service_name, u.username 
+      FROM bookings b
+      JOIN services s ON b.service_id = s.id
+      JOIN users u ON b.user_id = u.id
+      ORDER BY b.booking_date DESC
+    `);
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Ошибка при получении всех записей' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });

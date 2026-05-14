@@ -76,8 +76,14 @@
 Авторизация:
 ![Скриншот авторизации](./.github/login_page.png)
 
+Регистрация:
+![Скриншот моих записей](./.github/my_notes_page.png)
+
 Как админ видит сайт:
 ![Скриншот как админ видит сайт](./.github/admin/admin_view.png)
 
 Админ панель:
-![Скриншот админ панели](./.github/admin/admin_panel.png)
+![Скриншот просмотра всех записей](./.github/admin/admin_panel.png)
+
+Админ панель:
+![Скриншот просмотра всех записей](./.github/admin/admin_all_note.png)

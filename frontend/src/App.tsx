@@ -5,6 +5,8 @@ import Home from './pages/Home.js';
 import Login from './pages/Login.js';
 import Register from './pages/Register.js';
 import AdminServices from './pages/AdminServices.js';
+import MyBookings from './pages/MyBookings.js';
+import AdminBookings from './pages/AdminBookings.js';
 
 interface User {
   id: number;
@@ -39,7 +41,12 @@ function App() {
               <li><Link to="/">Главная</Link></li>
               {user ? (
                 <>
-                  {user.role === 'admin' && <li><Link to="/admin/services">Услуги (Админ)</Link></li>}
+                  {user.role === 'admin' && (
+                    <>
+                      <li><Link to="/admin/services">Услуги (Админ)</Link></li>
+                      <li><Link to="/admin/bookings">Все записи (Админ)</Link></li>
+                    </>
+                  )}
                   <li><Link to="/bookings">Мои записи</Link></li>
                   <li><span className="user-name">Привет, {user.username}!</span></li>
                   <li><button className="logout-btn" onClick={handleLogout}>Выход</button></li>
@@ -59,7 +66,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin/services" element={<AdminServices />} />
-          <Route path="/bookings" element={<div className="container"><h2>Мои записи (Будет на 3 неделе)</h2></div>} />
+          <Route path="/admin/bookings" element={<AdminBookings />} />
+          <Route path="/bookings" element={<MyBookings />} />
         </Routes>
 
         <footer className="footer">
